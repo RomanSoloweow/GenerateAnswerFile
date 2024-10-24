@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Ookii.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ookii.AnswerFile;
 
@@ -172,22 +173,22 @@ public class Partition : ISpanParsable<Partition>
 
     private static bool ParseHelper(ReadOnlySpan<char> s, IFormatProvider? provider, bool throwOnError, [MaybeNullWhen(false)] out Partition result)
     {
-        var (hasSeparator, left, right) = s.SplitOnceLast(':');
-        ReadOnlySpan<char> size = s;
         string? label = null;
-        if (hasSeparator)
+        if (s.SplitOnceLast(':').TryGetValue(out var labelSpan, out var size))
         {
-            label = left.ToString();
-            size = right;
+            label = labelSpan.ToString();
+        }
+        else
+        {
+            size = s;
         }
 
         string? fileSystem = null;
         if (size.Last() == ']')
         {
-            (hasSeparator, left, right) = size.SplitOnceLast('[');
-            if (hasSeparator)
+            if (size.SplitOnceLast('[').TryGetValue(out var left, out var right))
             {
-                fileSystem = right[..(right.Length - 1)].ToString();
+                fileSystem = right[..^1].ToString();
                 size = left;
             }
         }

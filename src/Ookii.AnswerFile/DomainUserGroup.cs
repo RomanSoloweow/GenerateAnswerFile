@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text.Json.Serialization;
+﻿using Ookii.Common;
 
 namespace Ookii.AnswerFile;
 
@@ -106,7 +105,10 @@ public record class DomainUserGroup
     public static DomainUserGroup Parse(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var (group, domainUser) = value.SplitOnce(':');
-        return new DomainUserGroup(DomainUser.Parse(domainUser), group ?? DefaultGroup);
+        var (group, domainUser) = value.AsSpan()
+            .SplitOnce(":")
+            .Map(v => (v.Item1.ToString(), v.Item2.ToString())) ?? (DefaultGroup, value);
+
+        return new DomainUserGroup(DomainUser.Parse(domainUser), group);
     }
 }

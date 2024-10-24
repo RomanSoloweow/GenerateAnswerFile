@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using Ookii.Common;
+using System.Xml;
 
 namespace Ookii.AnswerFile;
 
@@ -22,7 +23,7 @@ static class XmlWriterExtensions
             var value = item.Value;
             if (value != null)
             {
-                var (prefix, name) = item.Key.SplitOnce(':');
+                var (prefix, name) = item.Key.AsSpan().SplitOnce(':').Map(v => (v.Item1.ToString(), v.Item2.ToString())) ?? (null, item.Key);
                 writer.WriteAttributeString(prefix, name, null, GetValueString(value));
             }
         }

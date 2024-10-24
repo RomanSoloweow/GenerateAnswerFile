@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Ookii.Common;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Ookii.AnswerFile;
@@ -134,7 +135,10 @@ public record class DomainUser
     public static DomainUser Parse(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var (domain, userName) = value.SplitOnce('\\');
+        var (domain, userName) = value.AsSpan()
+            .SplitOnce('\\')
+            .Map(v => (v.Item1.ToString(), v.Item2.ToString())) ?? (null, value);
+
         return new DomainUser(domain, userName);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Ookii.Common;
+using System.Text.RegularExpressions;
 
 namespace Ookii.AnswerFile;
 
@@ -103,13 +104,17 @@ public record class LocalCredential
     public static LocalCredential Parse(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var (group, credential) = value.SplitOnce(':');
-        var (userName, password) = credential.SplitOnce(',');
-        if (userName == null)
+
+        var memory = value.AsMemory();
+        var (group, credential) = memory
+            .SplitOnce(':')
+            .Map(v => (v.Item1.ToString(), v.Item2)) ?? (DefaultGroup, memory); 
+
+        if (!credential.Span.SplitOnce(',').TryGetValue(out var userName, out var password))
         {
             throw new FormatException(Properties.Resources.InvalidLocalCredential);
         }
 
-        return new LocalCredential(userName, password, group ?? DefaultGroup);
+        return new LocalCredential(userName.ToString(), password.ToString(), group);
     }
 }

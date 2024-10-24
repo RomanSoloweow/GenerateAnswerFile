@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Globalization;
+using Ookii.Common;
 
 namespace Ookii.AnswerFile;
 
@@ -130,15 +131,14 @@ public struct Resolution : ISpanParsable<Resolution>
     /// </remarks>
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Resolution result)
     {
-        var split = s.SplitOnce(',');
-        if (!split.HasValue)
+        if (!s.SplitOnce(',').TryGetValue(out var left, out var right))
         {
             result = default;
             return false;
         }
 
-        if (!int.TryParse(split.Left, NumberStyles.Integer, provider, out var width) ||
-            !int.TryParse(split.Right, NumberStyles.Integer, provider, out var height))
+        if (!int.TryParse(left, NumberStyles.Integer, provider, out var width) ||
+            !int.TryParse(right, NumberStyles.Integer, provider, out var height))
         {
             result = default;
             return false;
